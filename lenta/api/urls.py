@@ -2,5 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path('api/endpoint/', views.api_endpoint, name='api_endpoint'),
+	path('shops/', views.ShopsView.as_view(), name='shops-list'),
+	path('categories/', views.CategoriesView.as_view(), name='categories-list'),
+	path('sales/', views.SalesView.as_view(), name='sales-list'),
 ]
