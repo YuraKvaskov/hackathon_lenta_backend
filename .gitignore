@@ -58,6 +58,7 @@ cover/
 
 /media/
 
+.DS_Store
 
 # Django stuff:
 *.log
