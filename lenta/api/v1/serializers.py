@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Store, Product, Sales
+from api.v1.models import Store, Product, Sales
 
 
 class StoreSerializer(serializers.ModelSerializer):

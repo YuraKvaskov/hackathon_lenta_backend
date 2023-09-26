@@ -3,9 +3,9 @@ from rest_framework import filters
 from django_filters import rest_framework as django_filters
 from rest_framework.response import Response
 
-from .filters import ShopsFilter
-from .models import Store, Product, Sales
-from .serializers import CategoriesSerializer, SalesSerializer, StoreSerializer
+from api.v1.filters import ShopsFilter
+from api.v1.models import Store, Product, Sales
+from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer
 
 
 class SalesView(APIView):

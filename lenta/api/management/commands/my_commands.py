@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import csv
 from django.conf import settings
-from api.models import Store, Product, Sales
+from api.v1.models import Store, Product, Sales
 from datetime import datetime
 import os
 

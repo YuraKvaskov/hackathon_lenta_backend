@@ -1,6 +1,5 @@
-from rest_framework import filters
 from django_filters import rest_framework as django_filters
-from .models import Store
+from api.v1.models import Store
 
 
 class ShopsFilter(django_filters.FilterSet):
