@@ -3,12 +3,16 @@ from rest_framework import filters, status
 from django_filters import rest_framework as django_filters
 from rest_framework.response import Response
 from datetime import datetime
+from rest_framework import permissions
+from rest_framework.decorators import action, permission_classes
+
 
 from api.v1.filters import ShopsFilter
 from api.v1.models import Store, Product, Sales, SalesForecast
 from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer, SalesForecastSerializer
 
 
+@permission_classes([permissions.IsAuthenticated])  # как будет отбращаться ML?
 class SalesView(APIView):
     serializer_class = SalesSerializer
 
@@ -25,6 +29,7 @@ class SalesView(APIView):
         return Response({"data": serializer.data})
 
 
+@permission_classes([permissions.IsAuthenticated])
 class CategoriesView(APIView):
     serializer_class = CategoriesSerializer
 
@@ -34,6 +39,7 @@ class CategoriesView(APIView):
         return Response({"data": serializer.data})
 
 
+@permission_classes([permissions.IsAuthenticated])
 class ShopsView(APIView):
     serializer_class = StoreSerializer
 
@@ -51,6 +57,7 @@ class ShopsView(APIView):
         return Response({"data": serializer.data})
 
 
+@permission_classes([permissions.IsAuthenticated])
 class SalesForecastView(APIView):
     serializer_class = SalesForecastSerializer
 

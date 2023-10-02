@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,7 +20,12 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_filters',
     'rest_framework',
+    'rest_framework.authentication',
+    'rest_framework.authtoken',
     'api.apps.ApiConfig',
+    'users',
+    'corsheaders',
+    'djoser'
 ]
 
 REST_FRAMEWORK = {
@@ -29,6 +35,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -97,3 +104,34 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Добавим сюда крутое описание, позже..',
     'VERSION': '1.0.0',
 }
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', 
+    ],
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
+
+SIMPLE_JWT = {
+    # Устанавливаем срок жизни токена
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+   'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+
+
+# настройки для доступа других сервисов
+CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000', # - это будет фронт
+    'http://localhost:5000', # - это будет ML
+] 
+CORS_URLS_REGEX = r'^/api/.*$'
