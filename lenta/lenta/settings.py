@@ -20,12 +20,12 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_filters',
     'rest_framework',
-    'rest_framework.authentication',
-    'rest_framework.authtoken',
+    # 'rest_framework.authentication',
+    # 'rest_framework.authtoken',
     'api.apps.ApiConfig',
     'users',
     'corsheaders',
-    'djoser'
+    # 'djoser'
 ]
 
 REST_FRAMEWORK = {
@@ -103,35 +103,37 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'API для ML сервиса команды "За еду!"',
     'DESCRIPTION': 'Добавим сюда крутое описание, позже..',
     'VERSION': '1.0.0',
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
-    ],
-    
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated', 
+#     ],
+    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',
+    #     # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ]
 }
 
-SIMPLE_JWT = {
-    # Устанавливаем срок жизни токена
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-   'AUTH_HEADER_TYPES': ('Bearer',),
-}
+# SIMPLE_JWT = {
+#     # Устанавливаем срок жизни токена
+#    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+#    'AUTH_HEADER_TYPES': ('Bearer',),
+# }
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/login/'
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/login/'
 
 
 
 # настройки для доступа других сервисов
 CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', # - это будет фронт
-    'http://localhost:5000', # - это будет ML
-] 
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000', # - это будет фронт
+#     'http://localhost:8080', # - это будет ML
+# ] 
 CORS_URLS_REGEX = r'^/api/.*$'

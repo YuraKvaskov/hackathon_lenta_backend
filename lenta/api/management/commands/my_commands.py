@@ -57,16 +57,16 @@ class Command(BaseCommand):
             reader = csv.DictReader(file)
 
             for row in reader:
-                store, _ = Store.objects.get_or_create(st_id=row['st_id'])
-                product, _ = Product.objects.get_or_create(pr_sku_id=row['pr_sku_id'])
+                store_id, _ = Store.objects.get_or_create(st_id=row['st_id'])
+                product_id, _ = Product.objects.get_or_create(pr_sku_id=row['pr_sku_id'])
                 date = datetime.strptime(row['date'], '%Y-%m-%d')
 
                 pr_sales_type_id = bool(
                     int(row['pr_sales_type_id']))
 
                 Sales.objects.create(
-                    store=store,
-                    product=product,
+                    store_id=store_id,
+                    product_id=product_id,
                     date=date,
                     pr_sales_type_id=pr_sales_type_id,
                     pr_sales_in_units=float(row['pr_sales_in_units']),

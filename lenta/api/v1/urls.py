@@ -6,7 +6,7 @@ from api.v1 import views
 
 urlpatterns = [
 
-    path('user/', include('djoser.urls')),
+    # path('user/', include('djoser.urls')),
 	path('shops/', views.ShopsView.as_view(), name='shops-list'),
 	path('categories/', views.CategoriesView.as_view(), name='categories-list'),
 	path('sales/', views.SalesView.as_view(), name='sales-list'),
