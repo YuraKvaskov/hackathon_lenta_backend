@@ -4,7 +4,7 @@ import logging
 from datetime import date, timedelta
 import json
 
-from model import forecast
+# from model import forecast
 
 current_direct = os.path.join(os.getcwd(), 'out_data') 
 
@@ -52,6 +52,7 @@ def get_stores():
     ]
     """
     stores_url = get_address(URL_STORES)
+    print(stores_url)
     resp = requests.get(stores_url)
     if resp.status_code != 200:
         _logger.warning("Could not get stores list")
@@ -59,28 +60,36 @@ def get_stores():
     return resp.json()["data"]
 
 
-def get_sales(store_id=None, pr_sku_id=None):
+def get_sales(store_id=None, product_id=None):
     """
-    [
+     "data": [
         {
-            "id": 1,
-            "date": "2022-10-20",
-            "pr_sales_type_id": true,
-            "pr_sales_in_units": 5,
-            "pr_promo_sales_in_units": 5,
-            "pr_sales_in_rub": 825.0,
-            "pr_promo_sales_in_rub": 825.0,
-            "store": "c81e728d9d4c2f636f067f89cc14862c",
-            "product": "c7b711619071c92bef604c7ad68380dd"
-        },
-    ]
+            "store_id": "c81e728d9d4c2f636f067f89cc14862c",
+            "product_id": "fe50ae64d08d4f8245aaabc55d1baf79",
+            "fact": [
+                {
+                    "date": "2022-08-31",
+                    "pr_sales_type_id": true,
+                    "pr_sales_in_units": 0,
+                    "pr_promo_sales_in_units": 0,
+                    "pr_sales_in_rub": 61.0,
+                    "pr_promo_sales_in_rub": 61.0
+                },
+                {
+                    "date": "2023-03-14",
+                    "pr_sales_type_id": false,
+                    "pr_sales_in_units": 4,
+                    "pr_promo_sales_in_units": 0,
+                    "pr_sales_in_rub": 564.0,
+                    "pr_promo_sales_in_rub": 0.0
+                },
     """
     sale_url = get_address(URL_SALES)
     params = {}
     if store_id is not None:
         params["store_id"] = store_id
-    if pr_sku_id is not None:
-        params["pr_sku_id"] = pr_sku_id
+    if product_id is not None:
+        params["product_id"] = product_id
     resp = requests.get(sale_url, params=params)
     if resp.status_code != 200:
         _logger.warning("Could not get sales history")
@@ -109,37 +118,54 @@ def get_categs_info():
     return result
 
 
+
+
+
 def main(today=date.today()):
     forecast_dates = [today + timedelta(days=d) for d in range(1, 6)]
     forecast_dates = [el.strftime("%Y-%m-%d") for el in forecast_dates]
-    categs_info = get_categs_info()
+
+    categs_info = get_categs_info()  # список product_id
     for store in get_stores():
         result = []
         print('store', store)
-        for item in get_sales(store=store["store"]):
-            print('item', item)
-            item_info = categs_info[item["product"]]
-            print('item_info', item_info)
-            sales = item["fact"]
-            prediction = forecast(sales, item_info, store)
-            result.append({"store": store["store"],
-                           "forecast_date": today.strftime("%Y-%m-%d"),
-                           "forecast": {"product_id": item["product_id"],
-                                        "sales_units": {k: v for k, v in zip(forecast_dates, prediction)}
-                                        }
-                          })
-        requests.post(get_address(URL_FORECAST), json={"data": result})
+        # получаем id магазина
+        store_id = store["st_id"]
+        for product_id in get_categs_info():
+            # получаем id продукта
+            # print('store_id', store_id)
+            # print('product_id', product_id)
+            for item in get_sales(store_id=store_id, product_id=product_id):
+                # print('item', item)
+                # print('item', item["product_id"])
+                # print('categs_info', categs_info)
+                item_info = categs_info[item["product_id"]]
+                # print('item_info', item_info)
+                sales = item["fact"]
+                # print('sales', sales)
+                predict = (sales, item_info, store)
+                print('predict\n', predict, '\n')
+                # write_json(predict, name='predict')
+            #     prediction = forecast(sales, item_info, store)
+                
+            #     result.append({"store": store["store"],
+            #                 "forecast_date": today.strftime("%Y-%m-%d"),
+            #                 "forecast": {"product_id": item["product_id"],
+            #                                 "sales_units": {k: v for k, v in zip(forecast_dates, prediction)}
+            #                                 }
+            #                 })
+            # requests.post(get_address(URL_FORECAST), json={"data": result})
 
 
 if __name__ == "__main__":
     setup_logging()
-    stores = get_stores()
-    sales = get_sales()
-    categs_info = get_categs_info()
-    write_json(val=stores, name="stores") # работает
-    write_json(val=sales, name="sales")
-    write_json(val=categs_info, name="categs_info")
-    
-    print(get_sales()) # не работает
-    print(get_categs_info()) #  не работает 
-    # main()
+    # stores = get_stores()
+    # sales = get_sales()
+    # categs_info = get_categs_info()
+    # write_json(val=stores, name="stores") # работает
+    # write_json(val=sales, name="sales")
+    # write_json(val=categs_info, name="categs_info")
+    # print(stores)
+    # print(get_sales()) # не работает
+    # print(get_categs_info()) #  не работает 
+    main()

@@ -28,12 +28,13 @@ class SalesView(APIView):
         print('product_id', product_id)
         print('store_id', store_id)
         
-        if product_id and store_id:
-            sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
+        if store_id:
+            sales = Sales.objects.filter(store__st_id=store_id)
         # else:
         #     sales = Sales.objects.all()
-            
-        sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
+        if product_id and store_id: 
+            sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
+        
         serialized_sales = self.serializer_class(sales, many=True).data
 
         response_data = {

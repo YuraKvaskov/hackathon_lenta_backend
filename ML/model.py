@@ -1,10 +1,44 @@
-#!/usr/bin/env python
-# coding: utf-8
+import numpy as np
+import pandas as pd
+import plotly.express as px
 
-# In[102]:
+import matplotlib.pyplot as plt
+from statsmodels.tsa.seasonal import seasonal_decompose
+import seaborn as sns
+
+from copy import deepcopy
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.express as px
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit, RandomizedSearchCV, GridSearchCV
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.cluster import KMeans
 
 
-def forecast(subm_data, train_data, holidays):
+from lightgbm import LGBMRegressor 
+import phik
+from phik.report import correlation_report, plot_correlation_matrix
+from prophet import Prophet
+from prophet.plot import add_changepoints_to_plot
+from statsmodels.tsa.seasonal import seasonal_decompose
+
+import pickle
+
+
+
+
+def forecast(
+    subm_data,
+    train_data,
+    holidays
+):
 # 0. ЗАГРУЖАЕМ МОДЕЛИ
     model_lgbmr_1 = pickle.load(open('model_lgbmr_1.pkl', 'rb'))
     model_lgbmr_2_b = pickle.load(open('model_lgbmr_2_b.pkl', 'rb'))
@@ -264,23 +298,5 @@ def forecast(subm_data, train_data, holidays):
     pr_1, pr_2_t, pr_2_b, pr_4 = get_prediction(ft_1, ft_2_t, ft_2_b, ft_4)
     # объединяем предсказания в submission датафрейм
     sales_submission_pred = predictions_to_submission(sales_sub,pr_1, pr_2_t, pr_2_b, pr_4, ft_1, ft_2_t, ft_2_b, ft_4)
+
     return sales_submission_pred
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
