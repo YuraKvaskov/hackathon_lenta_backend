@@ -38,7 +38,7 @@ def write_json(val, name):
         json.dump(val, f)
 
 def get_stores():
-    """ Запрос для получения списка магащзинов.
+    """ Запрос для получения списка магазинов.
     [
     {
         "st_id": "1aa057313c28fa4a40c5bc084b11d276",
