@@ -2,23 +2,23 @@ from django.db import models
 
 
 class Store(models.Model):
-    st_id = models.CharField(max_length=255)
+    st_id = models.CharField(max_length=255, primary_key=True)
     st_city_id = models.CharField(max_length=255)
     st_division_code = models.CharField(max_length=255)
     st_type_format_id = models.IntegerField()
     st_type_loc_id = models.IntegerField()
     st_type_size_id = models.IntegerField()
     st_is_active = models.BooleanField()
-
+    
     def __str__(self):
         return self.st_id
 
 
 class Product(models.Model):
+    pr_sku_id = models.CharField(max_length=255, primary_key=True)
     pr_group_id = models.CharField(max_length=255)
     pr_cat_id = models.CharField(max_length=255)
     pr_subcat_id = models.CharField(max_length=255)
-    pr_sku_id = models.CharField(max_length=255)
     pr_uom_id = models.IntegerField()
 
     def __str__(self):

@@ -28,6 +28,14 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class SalesSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Sales
-        fields = '__all__'
+        fields = [
+            'date',
+            'pr_sales_type_id',
+            'pr_sales_in_units',
+            'pr_promo_sales_in_units',
+            'pr_sales_in_rub',
+            'pr_promo_sales_in_rub'
+        ]

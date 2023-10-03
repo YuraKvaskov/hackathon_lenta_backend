@@ -12,24 +12,45 @@ from api.v1.models import Store, Product, Sales, SalesForecast
 from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer, SalesForecastSerializer
 
 
-@permission_classes([permissions.IsAuthenticated])  # как будет отбращаться ML?
+# @permission_classes([permissions.IsAuthenticated])  # как будет отбращаться ML?
 class SalesView(APIView):
+    """
+    Возвращает временной ряд с информацией о количестве проданных товаров.
+    Обязательные входные параметры запроса: id товара, id ТЦ.\n
+    Образец запроса
+    /?store_id=<store_id>&product_id=<product_id>
+    """
     serializer_class = SalesSerializer
 
     def get(self, request):
         product_id = request.query_params.get('product_id')
         store_id = request.query_params.get('store_id')
-
-        if product_id and store_id:
+        print('product_id', product_id)
+        print('store_id', store_id)
+        
+        if store_id:
+            sales = Sales.objects.filter(store__st_id=store_id)
+        # else:
+        #     sales = Sales.objects.all()
+        if product_id and store_id: 
             sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
-        else:
-            sales = Sales.objects.all()
+        
+        serialized_sales = self.serializer_class(sales, many=True).data
 
-        serializer = self.serializer_class(sales, many=True)  #
-        return Response({"data": serializer.data})
+        response_data = {
+            "data": [
+                {
+                    "store_id": store_id,
+                    "product_id": product_id,
+                    "fact": serialized_sales
+                }
+            ]
+        }
+
+        return Response(response_data)
 
 
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 class CategoriesView(APIView):
     serializer_class = CategoriesSerializer
 
@@ -39,7 +60,7 @@ class CategoriesView(APIView):
         return Response({"data": serializer.data})
 
 
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 class ShopsView(APIView):
     serializer_class = StoreSerializer
 
@@ -57,7 +78,7 @@ class ShopsView(APIView):
         return Response({"data": serializer.data})
 
 
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 class SalesForecastView(APIView):
     serializer_class = SalesForecastSerializer
 
