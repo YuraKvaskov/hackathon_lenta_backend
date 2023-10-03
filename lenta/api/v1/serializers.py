@@ -16,9 +16,14 @@ class SalesForecastSerializer(serializers.ModelSerializer):
 
 
 class StoreSerializer(serializers.ModelSerializer):
+    st_is_active = serializers.SerializerMethodField()
+    
     class Meta:
         model = Store
         fields = '__all__'
+        
+    def get_st_is_active(self, obj):
+        return int(obj.st_is_active)
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
