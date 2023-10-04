@@ -1,8 +1,11 @@
+from io import BytesIO
+import pandas as pd
+
 from rest_framework.views import APIView
 from rest_framework import filters, status
 from django_filters import rest_framework as django_filters
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 from rest_framework.response import Response
 from datetime import datetime, timedelta
@@ -12,7 +15,15 @@ from rest_framework.decorators import action, permission_classes
 
 from api.v1.filters import ShopsFilter
 from api.v1.models import Store, Product, Sales, SalesForecast
-from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer, SalesForecastSerializer
+from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer, SalesForecastSerializer, \
+    InfoHeaderSerializer
+
+
+class InfoHeaderView(APIView):
+    def get(self, request):
+        user = request.user
+        serializer = InfoHeaderSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # @permission_classes([permissions.IsAuthenticated])  # как будет отбращаться ML?
@@ -99,7 +110,7 @@ class SalesForecastView(APIView):
             return Response({"message": "В запросе отсутствуют данные"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        # Получение параметров запроса
+
         st_city_id = request.query_params.get('st_city_id')
         store_id = request.query_params.get('store_id')
         pr_group_id = request.query_params.get('pr_group_id')
@@ -108,7 +119,6 @@ class SalesForecastView(APIView):
         selected_interval = int(request.query_params.get('selected_interval', 14))
 
         start_date = datetime.now().date() + timedelta(days=1)
-
         end_date = start_date + timedelta(days=selected_interval)
 
         filters = {}
@@ -133,3 +143,35 @@ class SalesForecastView(APIView):
 
         serializer = self.serializer_class(forecasts, many=True)
         return JsonResponse({'data': serializer.data})
+
+    @action(detail=False, methods=['POST'])
+    def export_selected_to_excel(self, request):
+        data = request.data.get("data")
+        if data:
+            selected_forecasts = [item for item in data if item.get('selected')]
+            if selected_forecasts:
+                df_data = {
+                    'forecast_date': [],
+                    'store': [],
+                    'product': [],
+                    'forecast': [],
+                }
+                for forecast in selected_forecasts:
+                    df_data['forecast_date'].append(forecast['forecast_date'])
+                    df_data['store'].append(forecast['store'])
+                    df_data['product'].append(forecast['product'])
+                    df_data['forecast'].append(forecast['forecast'])
+                df = pd.DataFrame(df_data)
+
+                output = BytesIO()
+                writer = pd.ExcelWriter(output, engine='xlsxwriter')
+                df.to_excel(writer, sheet_name='Selected Forecasts', index=False)
+                writer.save()
+
+                response = HttpResponse(output.getvalue(),
+                                        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = 'attachment; filename=selected_forecasts.xlsx'
+
+                return response
+        return Response({"message": "Нет выбранных строк для выгрузки"}, status=status.HTTP_400_BAD_REQUEST)
+

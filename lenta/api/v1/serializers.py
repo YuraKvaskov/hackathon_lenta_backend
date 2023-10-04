@@ -1,13 +1,31 @@
 from rest_framework import serializers
 from api.v1.models import Store, Product, Sales, SalesForecast
+from django.contrib.auth import get_user_model
+from datetime import datetime
+
+
+User = get_user_model()
+
+
+class InfoHeaderSerializer(serializers.ModelSerializer):
+    current_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+    def get_current_date(self, obj):
+        current_date = datetime.now().strftime('%d %B %Y')
+        return current_date
 
 
 class SalesForecastSerializer(serializers.ModelSerializer):
     forecast = serializers.JSONField()  # Здесь предполагается, что поле "forecast" будет JSON-строкой
+    selected = serializers.BooleanField(default=False)
 
     class Meta:
         model = SalesForecast
-        fields = ('store', 'product', 'forecast_date', 'forecast')
+        fields = ('selected', 'store', 'product', 'forecast_date', 'forecast')
 
     def to_representation(self, instance):
         # Преобразуйте даты из формата datetime в строку "год-месяц-день"
