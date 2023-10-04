@@ -1,22 +1,35 @@
 from rest_framework import serializers
-from api.v1.models import Store, Product, Sales, SalesForecast
+from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate
 from django.contrib.auth import get_user_model
 from datetime import datetime
 
+from users.models import UserStore
 
 User = get_user_model()
 
 
+class FilterTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilterTemplate
+        fields = '__all__'
+
+
 class InfoHeaderSerializer(serializers.ModelSerializer):
     current_date = serializers.SerializerMethodField()
+    store_ids = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name')
+        fields = ('first_name', 'last_name', 'store_ids')
 
     def get_current_date(self, obj):
         current_date = datetime.now().strftime('%d %B %Y')
         return current_date
+
+    def get_store_ids(self, obj):
+        user_stores = UserStore.objects.filter(user=obj)
+        store_ids = [store.store.st_id for store in user_stores]
+        return store_ids
 
 
 class SalesForecastSerializer(serializers.ModelSerializer):

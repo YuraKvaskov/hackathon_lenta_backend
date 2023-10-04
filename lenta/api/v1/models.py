@@ -1,4 +1,45 @@
 from django.db import models
+from datetime import datetime, timedelta
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
+
+class FilterTemplate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    st_city_id = models.CharField(max_length=255, blank=True, null=True)
+    store_id = models.CharField(max_length=255, blank=True, null=True)
+    pr_group_id = models.CharField(max_length=255, blank=True, null=True)
+    pr_cat_id = models.CharField(max_length=255, blank=True, null=True)
+    pr_subcat_id = models.CharField(max_length=255, blank=True, null=True)
+    selected_interval = models.IntegerField()
+
+    def apply_filters(self, queryset):
+        filters = {}
+        if self.st_city_id:
+            filters['store__st_city_id'] = self.st_city_id
+        if self.store_id:
+            filters['store__st_id'] = self.store_id
+        if self.pr_group_id:
+            filters['product__pr_group_id'] = self.pr_group_id
+        if self.pr_cat_id:
+            filters['product__pr_cat_id'] = self.pr_cat_id
+        if self.pr_subcat_id:
+            filters['product__pr_subcat_id'] = self.pr_subcat_id
+
+        start_date = datetime.now().date() + timedelta(days=1)
+        end_date = start_date + timedelta(days=self.selected_interval)
+
+        return queryset.filter(
+            forecast_date__gte=start_date,
+            forecast_date__lte=end_date,
+            **filters
+        )
+
+    def __str__(self):
+        return self.name
 
 
 class Store(models.Model):

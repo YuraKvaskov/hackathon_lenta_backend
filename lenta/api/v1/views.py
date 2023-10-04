@@ -14,9 +14,51 @@ from rest_framework.decorators import action, permission_classes
 
 
 from api.v1.filters import ShopsFilter
-from api.v1.models import Store, Product, Sales, SalesForecast
+from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate
 from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSerializer, SalesForecastSerializer, \
-    InfoHeaderSerializer
+    InfoHeaderSerializer, FilterTemplateSerializer
+
+
+class SaveFilterTemplateView(APIView):
+    def get(self, request):
+        user = request.user
+        templates = FilterTemplate.objects.filter(user=user)
+        serializer = FilterTemplateSerializer(templates, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        template_name = data.get('template_name')
+        st_city_id = data.get('st_city_id')
+        store_id = data.get('store_id')
+        pr_group_id = data.get('pr_group_id')
+        pr_cat_id = data.get('pr_cat_id')
+        pr_subcat_id = data.get('pr_subcat_id')
+        selected_interval = int(data.get('selected_interval', 14))
+
+        filter_template, created = FilterTemplate.objects.get_or_create(
+            user=user,
+            name=template_name,
+        )
+        filter_template.st_city_id = st_city_id
+        filter_template.store_id = store_id
+        filter_template.pr_group_id = pr_group_id
+        filter_template.pr_cat_id = pr_cat_id
+        filter_template.pr_subcat_id = pr_subcat_id
+        filter_template.selected_interval = selected_interval
+        filter_template.save()
+
+        return Response({'message': 'Шаблон успешно сохранен'}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, template_id):
+        try:
+            user = request.user
+            template = FilterTemplate.objects.get(user=user, id=template_id)
+            template.delete()
+            return Response({'message': 'Шаблон успешно удален'}, status=status.HTTP_204_NO_CONTENT)
+        except FilterTemplate.DoesNotExist:
+            return Response({'message': 'Шаблон не найден'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class InfoHeaderView(APIView):
@@ -144,8 +186,9 @@ class SalesForecastView(APIView):
         serializer = self.serializer_class(forecasts, many=True)
         return JsonResponse({'data': serializer.data})
 
-    @action(detail=False, methods=['POST'])
-    def export_selected_to_excel(self, request):
+
+class ExportSelectedForecastsToExcelView(APIView):
+    def post(self, request):
         data = request.data.get("data")
         if data:
             selected_forecasts = [item for item in data if item.get('selected')]
@@ -174,4 +217,3 @@ class SalesForecastView(APIView):
 
                 return response
         return Response({"message": "Нет выбранных строк для выгрузки"}, status=status.HTTP_400_BAD_REQUEST)
-
