@@ -4,6 +4,8 @@ import logging
 from datetime import date, timedelta
 import json
 
+from ML.model import forecast
+
 # from model import forecast
 
 current_direct = os.path.join(os.getcwd(), 'out_data') 
@@ -145,16 +147,16 @@ def main(today=date.today()):
                 # print('sales', sales)
                 predict = (sales, item_info, store)
                 print('predict\n', predict, '\n')
-                # write_json(predict, name='predict')
-            #     prediction = forecast(sales, item_info, store)
+                write_json(predict, name='predict')
+                prediction = forecast(sales, item_info, store)
                 
-            #     result.append({"store": store["store"],
-            #                 "forecast_date": today.strftime("%Y-%m-%d"),
-            #                 "forecast": {"product_id": item["product_id"],
-            #                                 "sales_units": {k: v for k, v in zip(forecast_dates, prediction)}
-            #                                 }
-            #                 })
-            # requests.post(get_address(URL_FORECAST), json={"data": result})
+                result.append({"store": store["store"],
+                            "forecast_date": today.strftime("%Y-%m-%d"),
+                            "forecast": {"product_id": item["product_id"],
+                                            "sales_units": {k: v for k, v in zip(forecast_dates, prediction)}
+                                            }
+                            })
+            requests.post(get_address(URL_FORECAST), json={"data": result})
 
 
 if __name__ == "__main__":

@@ -1,8 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework import filters, status
 from django_filters import rest_framework as django_filters
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+
 from rest_framework.response import Response
-from datetime import datetime
+from datetime import datetime, timedelta
 from rest_framework import permissions
 from rest_framework.decorators import action, permission_classes
 
@@ -96,28 +99,37 @@ class SalesForecastView(APIView):
             return Response({"message": "В запросе отсутствуют данные"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
+        # Получение параметров запроса
+        st_city_id = request.query_params.get('st_city_id')
         store_id = request.query_params.get('store_id')
-        sku = request.query_params.get('sku')
-        start_date_param = request.query_params.get('start_date')
-        end_date_param = request.query_params.get('end_date')
+        pr_group_id = request.query_params.get('pr_group_id')
+        pr_cat_id = request.query_params.get('pr_cat_id')
+        pr_subcat_id = request.query_params.get('pr_subcat_id')
+        selected_interval = int(request.query_params.get('selected_interval', 14))
 
-        start_date = None
-        end_date = None
+        start_date = datetime.now().date() + timedelta(days=1)
 
-        if start_date_param:
-            start_date = datetime.strptime(start_date_param, "%Y-%m-%d")
-        if end_date_param:
-            end_date = datetime.strptime(end_date_param, "%Y-%m-%d")
+        end_date = start_date + timedelta(days=selected_interval)
 
-        forecasts = SalesForecast.objects.all()
-
+        filters = {}
+        if st_city_id:
+            filters['store__st_city_id'] = st_city_id
         if store_id:
-            forecasts = forecasts.filter(store__st_id=store_id)
-        if sku:
-            forecasts = forecasts.filter(product__pr_sku_id=sku)
-
-        if start_date and end_date:
-            forecasts = forecasts.filter(forecast_date__gte=start_date, forecast_date__lte=end_date)
+            filters['store__st_id'] = store_id
+        if pr_group_id:
+            filters['product__pr_group_id'] = pr_group_id
+        if pr_cat_id:
+            filters['product__pr_cat_id'] = pr_cat_id
+        if pr_subcat_id:
+            filters['product__pr_subcat_id'] = pr_subcat_id
+        try:
+            forecasts = SalesForecast.objects.filter(
+                forecast_date__gte=start_date,
+                forecast_date__lte=end_date,
+                **filters
+            )
+        except ObjectDoesNotExist:
+            return JsonResponse({'data': []})
 
         serializer = self.serializer_class(forecasts, many=True)
-        return Response({"data": serializer.data})
+        return JsonResponse({'data': serializer.data})
