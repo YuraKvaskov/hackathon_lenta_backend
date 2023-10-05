@@ -1,12 +1,18 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
+
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-*#l7sc%ty306qlx!sssz&87n_-um2de=r*)kz9sz7m*_x$&5em'
 
-DEBUG = True
+# TODO в проде убрать поумолчанию
+SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
+
+# TODO поменять на False
+DEBUG = os.getenv('DEBUG', default=True)   
 
 ALLOWED_HOSTS = ['*']
 
@@ -82,7 +88,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'Ru-ru'
 
 TIME_ZONE = 'UTC'
 
@@ -117,8 +123,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     # Устанавливаем срок жизни токена
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-   'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 LOGIN_REDIRECT_URL = '/'
