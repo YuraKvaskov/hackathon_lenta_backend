@@ -20,7 +20,7 @@ class InfoHeaderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'store_ids')
+        fields = ('first_name', 'last_name', 'store_ids', 'current_date')
 
     def get_current_date(self, obj):
         current_date = datetime.now().strftime('%d %B %Y')
