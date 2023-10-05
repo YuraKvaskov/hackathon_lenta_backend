@@ -20,6 +20,14 @@ from api.v1.serializers import CategoriesSerializer, SalesSerializer, StoreSeria
 
 
 class SaveFilterTemplateView(APIView):
+    """
+    Представление для сохранения и управления шаблонами фильтров.
+        - `get`: Получить список всех сохраненных шаблонов для текущего пользователя.
+        - `post`: Создать новый шаблон фильтра.
+        - `delete`: Удалить шаблон фильтра по его идентификатору.
+    """
+    serializer_class = None
+
     def get(self, request):
         user = request.user
         templates = FilterTemplate.objects.filter(user=user)
@@ -62,6 +70,11 @@ class SaveFilterTemplateView(APIView):
 
 
 class InfoHeaderView(APIView):
+    """
+    Представление для получения информации о пользователе и его магазинах в хеддере.
+    """
+    serializer_class = InfoHeaderSerializer
+
     def get(self, request):
         user = request.user
         serializer = InfoHeaderSerializer(user)
@@ -83,14 +96,14 @@ class SalesView(APIView):
         store_id = request.query_params.get('store_id')
         print('product_id', product_id)
         print('store_id', store_id)
-        
+
         if store_id:
             sales = Sales.objects.filter(store__st_id=store_id)
         # else:
         #     sales = Sales.objects.all()
-        if product_id and store_id: 
+        if product_id and store_id:
             sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
-        
+
         serialized_sales = self.serializer_class(sales, many=True).data
 
         response_data = {
@@ -108,6 +121,9 @@ class SalesView(APIView):
 
 # @permission_classes([permissions.IsAuthenticated])
 class CategoriesView(APIView):
+    """
+    Представление для получения списка категорий продуктов.
+    """
     serializer_class = CategoriesSerializer
 
     def get(self, request):
@@ -118,8 +134,23 @@ class CategoriesView(APIView):
 
 # @permission_classes([permissions.IsAuthenticated])
 class ShopsView(APIView):
-    serializer_class = StoreSerializer
+    """
+    Представление для получения списка магазинов.
+    Поддерживает фильтрацию и сортировку.
+    Фильтры:
+    - st_city_id: ID города
+    - store_id: ID магазина
+    - pr_group_id: ID группы продуктов
+    - pr_cat_id: ID категории продуктов
+    - pr_subcat_id: ID подкатегории продуктов
+    - ordering: Поле для сортировки (по умолчанию сортировка по ID)
 
+    Ожидаемый ответ:
+    {
+        "data": [список магазинов]
+    }
+    """
+    serializer_class = StoreSerializer
     filter_backends = [filters.OrderingFilter, django_filters.DjangoFilterBackend]
     filterset_class = ShopsFilter
     ordering_fields = '__all__'
@@ -136,6 +167,23 @@ class ShopsView(APIView):
 
 # @permission_classes([permissions.IsAuthenticated])
 class SalesForecastView(APIView):
+    """
+    Представление для работы с прогнозами продаж.
+    - `post`: Принимает прогнозы продаж от ML.
+    - `get`: Получить прогнозы продаж с фильтрацией по параметрам.
+
+    Параметры запроса:
+    - st_city_id: ID города
+    - store_id: ID магазина
+    - pr_group_id: ID группы продуктов
+    - pr_cat_id: ID категории продуктов
+    - pr_subcat_id: ID подкатегории продуктов
+    - selected_interval: Выбранный интервал дней (по умолчанию 14 дней)
+    Ожидаемый ответ:
+    {
+        "data": [список прогнозов продаж]
+    }
+    """
     serializer_class = SalesForecastSerializer
 
     def post(self, request):
@@ -152,7 +200,22 @@ class SalesForecastView(APIView):
             return Response({"message": "В запросе отсутствуют данные"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
+        """
+        Получить прогнозы продаж с фильтрацией по параметрам.
 
+        Ожидаемые параметры запроса:
+        - st_city_id: ID города
+        - store_id: ID магазина
+        - pr_group_id: ID группы продуктов
+        - pr_cat_id: ID категории продуктов
+        - pr_subcat_id: ID подкатегории продуктов
+        - selected_interval: Выбранный интервал дней (по умолчанию 14 дней)
+
+        Успешный ответ:
+        {
+            "data": [список прогнозов продаж]
+        }
+        """
         st_city_id = request.query_params.get('st_city_id')
         store_id = request.query_params.get('store_id')
         pr_group_id = request.query_params.get('pr_group_id')
@@ -188,6 +251,12 @@ class SalesForecastView(APIView):
 
 
 class ExportSelectedForecastsToExcelView(APIView):
+    serializer_class = None
+    """
+    Представление для экспорта выбранных прогнозов продаж в формате Excel.
+
+    - `post`: Экспортировать выбранные прогнозы в Excel.
+    """
     def post(self, request):
         data = request.data.get("data")
         if data:
