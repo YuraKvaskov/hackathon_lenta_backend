@@ -77,8 +77,11 @@ class InfoHeaderView(APIView):
 
     def get(self, request):
         user = request.user
-        serializer = InfoHeaderSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if user.is_authenticated:
+            serializer = InfoHeaderSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 # @permission_classes([permissions.IsAuthenticated])  # как будет отбращаться ML?
@@ -204,69 +207,78 @@ class SalesForecastView(APIView):
             "data": [список прогнозов продаж]
         }
         """
-        st_city_id = request.query_params.get('st_city_id')
-        store_id = request.query_params.get('store_id')
-        pr_group_id = request.query_params.get('pr_group_id')
-        pr_cat_id = request.query_params.get('pr_cat_id')
-        pr_subcat_id = request.query_params.get('pr_subcat_id')
-        selected_interval = int(request.query_params.get('selected_interval', 14))
-
+        # st_city_id = request.query_params.get('st_city_id')
+        # store_id = request.query_params.get('store_id')
+        # pr_group_id = request.query_params.get('pr_group_id')
+        # pr_cat_id = request.query_params.get('pr_cat_id')
+        # pr_subcat_id = request.query_params.get('pr_subcat_id')
+        # selected_interval = int(request.query_params.get('selected_interval', 14))
         start_date = datetime.now().date() + timedelta(days=1)
-        end_date = start_date + timedelta(days=selected_interval)
+        end_date = start_date + timedelta(days=12)
 
-        filters = {}
-        if st_city_id:
-            filters['store__st_city_id'] = st_city_id
-        if store_id:
-            filters['store__st_id'] = store_id
-        if pr_group_id:
-            filters['product__pr_group_id'] = pr_group_id
-        if pr_cat_id:
-            filters['product__pr_cat_id'] = pr_cat_id
-        if pr_subcat_id:
-            filters['product__pr_subcat_id'] = pr_subcat_id
-        try:
-            forecasts = SalesForecast.objects.filter(
-                forecast_date__gte=start_date,
-                forecast_date__lte=end_date,
-                **filters
-            )
-        except ObjectDoesNotExist:
-            return JsonResponse({'data': []})
+        # Уберите фильтры и получите все записи
+        forecasts = SalesForecast.objects.all()
 
         serializer = self.serializer_class(forecasts, many=True)
         return JsonResponse({'data': serializer.data})
+        # start_date = datetime.now().date() + timedelta(days=1)
+        # end_date = start_date + timedelta(days=selected_interval)
+        #
+        # filters = {}
+        # if st_city_id:
+        #     filters['store__st_city_id'] = st_city_id
+        # if store_id:
+        #     filters['store__st_id'] = store_id
+        # if pr_group_id:
+        #     filters['product__pr_group_id'] = pr_group_id
+        # if pr_cat_id:
+        #     filters['product__pr_cat_id'] = pr_cat_id
+        # if pr_subcat_id:
+        #     filters['product__pr_subcat_id'] = pr_subcat_id
+        # try:
+        #     forecasts = SalesForecast.objects.filter(
+        #         forecast_date__gte=start_date,
+        #         forecast_date__lte=end_date,
+        #         **filters
+        #     )
+        # except ObjectDoesNotExist:
+        #     return JsonResponse({'data': []})
+        #
+        # serializer = self.serializer_class(forecasts, many=True)
+        # return JsonResponse({'data': serializer.data})
 
 
 class ExportSelectedForecastsToExcelView(APIView):
-    serializer_class = None
     """
     Представление для экспорта выбранных прогнозов продаж в формате Excel.
 
     - `post`: Экспортировать выбранные прогнозы в Excel.
     """
+
     def post(self, request):
         data = request.data.get("data")
         if data:
-            selected_forecasts = [item for item in data if item.get('selected')]
-            if selected_forecasts:
+            selected_forecast_ids = [item['id'] for item in data if item.get('selected')]
+            if selected_forecast_ids:
+                forecasts = SalesForecast.objects.filter(id__in=selected_forecast_ids)
+
                 df_data = {
                     'forecast_date': [],
                     'store': [],
                     'product': [],
-                    'forecast': [],
+                    'sales_units': [],
                 }
-                for forecast in selected_forecasts:
-                    df_data['forecast_date'].append(forecast['forecast_date'])
-                    df_data['store'].append(forecast['store'])
-                    df_data['product'].append(forecast['product'])
-                    df_data['forecast'].append(forecast['forecast'])
+                for forecast in forecasts:
+                    df_data['forecast_date'].append(forecast.forecast_date)
+                    df_data['store'].append(forecast.store.st_id)
+                    df_data['product'].append(forecast.product.pr_sku_id)
+                    df_data['sales_units'].append(forecast.sales_units)
                 df = pd.DataFrame(df_data)
 
                 output = BytesIO()
+
                 writer = pd.ExcelWriter(output, engine='xlsxwriter')
                 df.to_excel(writer, sheet_name='Selected Forecasts', index=False)
-                writer.save()
 
                 response = HttpResponse(output.getvalue(),
                                         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
