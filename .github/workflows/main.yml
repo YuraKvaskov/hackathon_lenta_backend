@@ -21,15 +21,13 @@ jobs:
         cd ./lenta
         docker buildx build \
           --platform linux/amd64,linux/arm64 \
+          --push   # Добавлен флаг --push для отправки образа в Docker Hub
           -t yuraskv/lenta:latest \
           .
         docker images  # Вывести информацию о доступных образах (добавлено для отладки)
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Push to Docker Hub
-      run: docker push yuraskv/lenta:latest
 
     - name: Cleanup Docker images
       run: docker image prune -f
@@ -38,12 +36,12 @@ jobs:
       if: success()
       run: |
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-        -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID_1 }}" \
+        -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
         -d "text=Сборка успешно завершена!"
 
     - name: Notify on failure
       if: failure()
       run: |
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-        -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID_1 }}" \
+        -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
         -d "text=Произошла ошибка при сборке."
