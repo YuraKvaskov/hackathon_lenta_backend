@@ -30,7 +30,7 @@ jobs:
 
     - name: Push Docker Container Image
       run: |
-        docker push yuraskv/lenta:latest
+        docker --push yuraskv/lenta:latest
 
     - name: Cleanup Docker images
       run: docker image prune -f
