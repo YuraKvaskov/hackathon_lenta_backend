@@ -23,6 +23,7 @@ jobs:
           --platform linux/amd64,linux/arm64 \
           -t yuraskv/lenta:latest \
           .
+        docker images  # Вывести информацию о доступных образах (добавлено для отладки)
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -44,4 +45,3 @@ jobs:
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
         -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID_1 }}" \
         -d "text=Произошла ошибка при сборке."
-
