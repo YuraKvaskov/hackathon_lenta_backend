@@ -137,7 +137,10 @@ CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удали
 # CORS_ALLOWED_ORIGINS = [
 #     'http://localhost:3000', # - это будет фронт
 #     'http://localhost:8080', # - это будет ML
-# ] 
+# ]
+CORS_ALLOW_HEADERS = [
+    'authentication',
+]
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOW_HEADERS = [
     'authentication',  
