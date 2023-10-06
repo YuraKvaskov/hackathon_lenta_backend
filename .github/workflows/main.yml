@@ -13,9 +13,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create Buildx Builder
-      run: docker buildx create --use mybuilder --platform linux/amd64,linux/arm64
-
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       # Проверьте успешность входа
@@ -23,8 +20,9 @@ jobs:
 
     - name: Build Multi-Platform Docker Image
       run: |
+        docker buildx use mybuilder # Используйте существующий сборщик
+        docker buildx inspect mybuilder --bootstrap # Убедитесь, что сборщик готов к использованию
         docker buildx build \
-          --platform linux/amd64,linux/arm64 \
           -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
           ./lenta
       # Проверьте успешность сборки
@@ -32,6 +30,8 @@ jobs:
 
     - name: Push Docker Container Image
       run: |
+        docker buildx use mybuilder # Используйте существующий сборщик
+        docker buildx inspect mybuilder --bootstrap # Убедитесь, что сборщик готов к использованию
         docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
       # Проверьте успешность пуша
       if: success()
