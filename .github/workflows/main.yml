@@ -18,12 +18,10 @@ jobs:
 
     - name: Build Multi-Platform Docker Image
       run: |
-        cd ./lenta
         docker buildx build \
           --platform linux/amd64,linux/arm64 \
-          -t yuraskv/lenta:latest \
-          .
-        docker images  # Вывести информацию о доступных образах (добавлено для отладки)
+          -t lenta:latest \
+          ./lenta
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
