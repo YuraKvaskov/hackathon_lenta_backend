@@ -27,7 +27,7 @@ jobs:
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push to Docker Hub
-      run: docker push yuraskv/lenta:latest
+      run: docker push yuraskv/lenta:latest ./lenta
 
     - name: Notify on success
       if: success()
