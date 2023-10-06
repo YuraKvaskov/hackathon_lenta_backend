@@ -14,10 +14,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build Docker Image
-      run: docker build -t lenta:latest .
+      run: docker build -t lenta:latest ./lenta
+
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push to Docker Hub
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
+      run: |
+        docker tag lenta:latest ${{ secrets.DOCKER_USERNAME }}/lenta:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
