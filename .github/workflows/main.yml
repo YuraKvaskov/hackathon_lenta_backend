@@ -29,17 +29,19 @@ jobs:
           --builder mybuilder \
           -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
           --push \
-          --progress plain \  # Добавьте этот параметр
-          ./lenta
+          --progress plain \
+          ./lenta > build.log 2>&1
       # Проверьте успешность сборки
       if: success()
-
+    
     - name: Check Docker Image
       run: |
         if docker images | grep -q "${{ secrets.DOCKER_USERNAME }}/lenta:latest"; then
           echo "Docker image found: ${{ secrets.DOCKER_USERNAME }}/lenta:latest"
         else
           echo "Docker image not found: ${{ secrets.DOCKER_USERNAME }}/lenta:latest"
+          echo "Build log:"
+          cat build.log  # Выводим логи ошибок
           exit 1
         fi
       # Проверьте успешность выполнения
