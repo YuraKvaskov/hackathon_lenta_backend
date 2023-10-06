@@ -29,7 +29,6 @@ jobs:
 
     - name: Push to Docker Hub
       run: |
-        cd ./lenta
         docker push yuraskv/lenta:latest
 
     - name: Notify on success
