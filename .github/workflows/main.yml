@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Multi-Platform Docker Image
 
 on:
   push:
@@ -13,14 +13,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Build Docker Image
-      run: docker build -t lenta:latest ./lenta
+    - name: Set up QEMU
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
+    - name: Set up Docker Buildx
+      run: |
+        docker buildx create --use
+        docker buildx inspect --bootstrap
+
+    - name: Build and Push Multi-Platform Docker Image
+      run: |
+        docker buildx build \
+          --push \
+          --platform linux/amd64,linux/arm64 \
+          -t yuraskv/lenta:latest \
+          .
+        docker buildx use default
+        docker buildx rm
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
+    
     - name: Push to Docker Hub
-      run: |
-        docker tag lenta:latest ${{ secrets.DOCKER_USERNAME }}/lenta:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
+      run: docker push yuraskv/lenta:latest
+
