@@ -27,7 +27,7 @@ jobs:
       run: docker buildx use default
 
     - name: Remove Builder
-      run: docker buildx rm
+      run: docker context rm default 
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
