@@ -23,31 +23,19 @@ jobs:
 
     - name: Build Multi-Platform Docker Image
       run: |
-        docker buildx build \
-          --builder mybuilder \
-          -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
-          ./lenta
-      # Проверьте успешность сборки
+         docker buildx build \
+           --builder mybuilder \
+           -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
+           ./lenta
+       # Проверьте успешность сборки
       if: success()
 
     - name: Push Docker Container Image
       run: |
-        docker buildx use mybuilder
-        docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
-      # Проверьте успешность пуша
+         docker buildx use mybuilder
+         docker buildx build \
+           --builder mybuilder \
+           -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
+           ./lenta
+       # Проверьте успешность пуша
       if: success()
-
-    - name: Cleanup Docker images
-      run: docker image prune -f
-
-    - name: Notify on success
-      if: success()
-      run: |
-        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-        -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-        -d "text=Сборка и публикация образа успешно завершены!"
-
-    - name: Notify on failure
-      if: failure()
-      run: |
-        curl -s -
