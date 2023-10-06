@@ -1,4 +1,4 @@
-name: Build and Push Multi-Platform Docker Image
+name: Build and Push Docker Image
 
 on:
   push:
@@ -13,43 +13,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create Buildx Builder
-      run: docker buildx create --use --name mybuilder --platform linux/amd64,linux/arm64
-      # Добавьте вывод
-      if: success()
-
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       # Проверьте успешность входа
       if: success()
 
-    - name: Build Multi-Platform Docker Image
+    - name: Build Docker Image
       run: |
-        docker buildx build \
-          --builder mybuilder \
-          -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest \
-          --push \
-          --progress plain \
-          ./lenta > build.log 2>&1
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest ./lenta
       # Проверьте успешность сборки
       if: success()
     
-    - name: Check Docker Image
-      run: |
-        if docker images | grep -q "${{ secrets.DOCKER_USERNAME }}/lenta:latest"; then
-          echo "Docker image found: ${{ secrets.DOCKER_USERNAME }}/lenta:latest"
-        else
-          echo "Docker image not found: ${{ secrets.DOCKER_USERNAME }}/lenta:latest"
-          echo "Build log:"
-          cat build.log  # Выводим логи ошибок
-          exit 1
-        fi
-      # Проверьте успешность выполнения
-      if: success()
-
     - name: Push Docker Container Image
       run: |
-        docker buildx use mybuilder
         docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
       # Проверьте успешность пуша
       if: success()
