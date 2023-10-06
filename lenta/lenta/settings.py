@@ -139,3 +139,6 @@ CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удали
 #     'http://localhost:8080', # - это будет ML
 # ] 
 CORS_URLS_REGEX = r'^/api/.*$'
+CORS_ALLOW_HEADERS = [
+    'authentication',  
+]

@@ -14,4 +14,5 @@ WORKDIR /app
 
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0:8000"]
+CMD ["python3", "manage.py", "runserver", "0:8000"] 
+
