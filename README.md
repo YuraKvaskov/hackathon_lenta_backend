@@ -43,18 +43,26 @@ python -m venv venv
   ```
 
 4. Перейдите в папку проекта:
+   ```
    cd lenta
+   ```
    
 5. Выполните миграции для базы данных:
+   ```
    python manage.py makemigrations
+   ```
+   ```
    python manage.py migrate
+   ```
    
 6. Создайте суперпользователя:
+   ```
    python manage.py createsuperuser
-
+   ```
 7. Запустите сервер:
+   ```
    python manage.py runserver
-
+   ```
 
 Документация к проекту доступна по адресу:
 
