@@ -18,7 +18,7 @@ RUN python3 manage.py makemigrations
 
 RUN python3 manage.py migrate
 
-RUN echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | python3 manage.py shell
+RUN echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')" | python3 manage.py shell
 
 RUN python manage.py my_commands
 
