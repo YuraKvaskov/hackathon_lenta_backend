@@ -12,16 +12,8 @@ COPY . /app
 
 WORKDIR /app
 
-# Создание миграций
-RUN python3 manage.py makemigrations
-
-# Применение миграций
-RUN python3 manage.py migrate
-
-# Создание суперпользователя (если необходимо)
-# RUN python3 manage.py createsuperuser --username admin --email admin@example.com
-
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0:8000"]
+COPY entrypoint.sh /app/entrypoint.sh
 
+CMD ["./entrypoint.sh"]
