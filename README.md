@@ -17,19 +17,25 @@
 ```
 docker pull yuraskv/lenta
 ```
+
 2. Запустите контейнер с проектом:
 ```
 docker run -p 8000:8000 yuraskv/lenta
 ```
+
 ## Запуск без Docker
 
 Для запуска проекта без Docker, выполните следующие шаги:
 
 1. Клонируйте проект:
+```
 git clone https://github.com/YuraKvaskov/your-project-name.git
+```
 
 2. Создайте виртуальное окружение:
+```
 python -m venv venv
+```
 
 3. Активируйте виртуальное окружение:
 
