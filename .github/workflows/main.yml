@@ -1,4 +1,4 @@
-name: Build and Push Multi-Platform Docker Image
+name: Build and Push Docker Image
 
 on:
   push:
@@ -13,24 +13,56 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create Buildx Builder
-      run: docker buildx create --use
-
-    - name: Build Multi-Platform Docker Image
-      run: |
-        docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          -t yuraskv/lenta:latest \
-          ./lenta
-
-    - name: Use Default Builder
-      run: docker buildx use default
-
-    - name: Remove Builder
-      run: docker buildx rm
-
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      # Проверьте успешность входа
+      if: success()
+
+    - name: Build Docker Image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/lenta:latest ./lenta
+      # Проверьте успешность сборки
+      if: success()
     
-    - name: Push to Docker Hub
-      run: docker push yuraskv/lenta:latest
+    - name: Push Docker Container Image
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/lenta:latest
+      # Проверьте успешность пуша
+      if: success()
+
+    - name: Cleanup Docker images
+      run: docker image prune -f
+
+    - name: Send Telegram Notification On Build Success
+      if: success()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID}}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: "Сборка образа успешно завершена!"
+
+    - name: Send Telegram Notification On Build Failure
+      if: failure()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: "Произошла ошибка при сборке образа."
+
+    - name: Send Telegram Notification On Push Success
+      if: success()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: "Отправка образа на Docker Hub успешно завершена!"
+
+    - name: Send Telegram Notification On Push Failure
+      if: failure()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: "Произошла ошибка при отправке образа на Docker Hub."
+
+
