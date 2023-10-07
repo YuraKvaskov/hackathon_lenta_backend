@@ -131,14 +131,29 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
-
-# настройки для доступа других сервисов
-CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000', # - это будет фронт
-#     'http://localhost:8080', # - это будет ML
-# ] 
-CORS_URLS_REGEX = r'^/api/.*$'
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_ALLOW_HEADERS = [
-    'authentication',  
+    'Accept',
+    'Accept-Encoding',
+    'Authorization',
+    'Content-Type',
+    'DNT',
+    'Origin',
+    'User-Agent',
+    'X-Requested-With',
 ]
+
+# # настройки для доступа других сервисов
+# CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
+# # CORS_ALLOWED_ORIGINS = [
+# #     'http://localhost:3000', # - это будет фронт
+# #     'http://localhost:8080', # - это будет ML
+# # ]
+# CORS_ALLOW_HEADERS = [
+#     'authentication',
+# ]
+# CORS_URLS_REGEX = r'^/api/.*$'
+# CORS_ALLOW_HEADERS = [
+#     'authentication',
+# ]
