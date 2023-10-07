@@ -14,6 +14,11 @@ WORKDIR /app
 
 EXPOSE 8000
 
-COPY entrypoint.sh /app/entrypoint.sh
+RUN python3 manage.py makemigrations
 
-CMD ["./entrypoint.sh"]
+RUN python3 manage.py migrate
+
+RUN echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'admin')" | python3 manage.py shell
+
+# Запуск приложения
+CMD ["python3", "manage.py", "runserver", "0:8000"]
