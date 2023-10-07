@@ -34,9 +34,6 @@ INSTALLED_APPS = [
     # 'djoser'
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -114,9 +111,8 @@ SPECTACULAR_SETTINGS = {
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -135,11 +131,29 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_ALLOW_HEADERS = [
+    'Accept',
+    'Accept-Encoding',
+    'Authorization',
+    'Content-Type',
+    'DNT',
+    'Origin',
+    'User-Agent',
+    'X-Requested-With',
+]
 
-# настройки для доступа других сервисов
-CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000', # - это будет фронт
-#     'http://localhost:8080', # - это будет ML
-# ] 
-CORS_URLS_REGEX = r'^/api/.*$'
+# # настройки для доступа других сервисов
+# CORS_ORIGIN_ALLOW_ALL = True # - доступ у всех, потом удалить!!!
+# # CORS_ALLOWED_ORIGINS = [
+# #     'http://localhost:3000', # - это будет фронт
+# #     'http://localhost:8080', # - это будет ML
+# # ]
+# CORS_ALLOW_HEADERS = [
+#     'authentication',
+# ]
+# CORS_URLS_REGEX = r'^/api/.*$'
+# CORS_ALLOW_HEADERS = [
+#     'authentication',
+# ]

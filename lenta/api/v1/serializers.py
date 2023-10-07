@@ -33,12 +33,16 @@ class InfoHeaderSerializer(serializers.ModelSerializer):
 
 
 class SalesForecastSerializer(serializers.ModelSerializer):
-    forecast = serializers.JSONField()  # Здесь предполагается, что поле "forecast" будет JSON-строкой
-    selected = serializers.BooleanField(default=False)
-
     class Meta:
         model = SalesForecast
-        fields = ('selected', 'store', 'product', 'forecast_date', 'forecast')
+        fields = '__all__'
+
+    # forecast = serializers.JSONField()  # Здесь предполагается, что поле "forecast" будет JSON-строкой
+    # selected = serializers.BooleanField(default=False)
+    #
+    # class Meta:
+    #     model = SalesForecast
+    #     fields = ('selected', 'store', 'product', 'forecast_date', 'forecast')
 
     def to_representation(self, instance):
         # Преобразуйте даты из формата datetime в строку "год-месяц-день"
