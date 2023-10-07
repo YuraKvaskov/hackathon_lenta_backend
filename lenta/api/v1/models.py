@@ -60,7 +60,7 @@ class Product(models.Model):
     pr_group_id = models.CharField(max_length=255)
     pr_cat_id = models.CharField(max_length=255)
     pr_subcat_id = models.CharField(max_length=255)
-    pr_uom_id = models.IntegerField()
+    pr_uom_id = models.IntegerField(null=True)
 
     def __str__(self):
         return self.pr_sku_id
