@@ -1,8 +1,14 @@
+import csv
+import os
+
 from django.core.management.base import BaseCommand
 from api.v1.models import Store, Product, Sales, SalesForecast
 import random
-from datetime import date
+from datetime import date, datetime
 from django.utils import timezone
+
+from lenta import settings
+
 
 class Command(BaseCommand):
     help = 'Populate the database with sample data'
