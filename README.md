@@ -7,7 +7,7 @@
 ## Авторы
 
 - [Юрий Квасков](https://github.com/YuraKvaskov)
-- [Олег Ильичевич](https://github.com/oitczvovich)
+- [Владимир Скалацкий](https://github.com/oitczvovich)
 
 ## Запуск в Docker
 
