@@ -207,45 +207,41 @@ class SalesForecastView(APIView):
             "data": [список прогнозов продаж]
         }
         """
-        # st_city_id = request.query_params.get('st_city_id')
-        # store_id = request.query_params.get('store_id')
-        # pr_group_id = request.query_params.get('pr_group_id')
-        # pr_cat_id = request.query_params.get('pr_cat_id')
-        # pr_subcat_id = request.query_params.get('pr_subcat_id')
-        # selected_interval = int(request.query_params.get('selected_interval', 14))
+        st_city_id = request.query_params.get('st_city_id')
+        store_id = request.query_params.get('store_id')
+        pr_group_id = request.query_params.get('pr_group_id')
+        pr_cat_id = request.query_params.get('pr_cat_id')
+        pr_subcat_id = request.query_params.get('pr_subcat_id')
+        pr_sku_id = request.query_params.get('pr_sku_id')  # Добавляем параметр для фильтрации по pr_sku_id
+        selected_interval = int(request.query_params.get('selected_interval', 14))
         start_date = datetime.now().date() + timedelta(days=1)
-        end_date = start_date + timedelta(days=12)
+        end_date = start_date + timedelta(days=selected_interval)
 
-        # Уберите фильтры и получите все записи
-        forecasts = SalesForecast.objects.all()
+        filters = {}
+        if st_city_id:
+            filters['store__st_city_id'] = st_city_id
+        if store_id:
+            filters['store__st_id'] = store_id
+        if pr_group_id:
+            filters['product__pr_group_id'] = pr_group_id
+        if pr_cat_id:
+            filters['product__pr_cat_id'] = pr_cat_id
+        if pr_subcat_id:
+            filters['product__pr_subcat_id'] = pr_subcat_id
+        if pr_sku_id:
+            filters['product__pr_sku_id'] = pr_sku_id
+
+        try:
+            forecasts = SalesForecast.objects.filter(
+                forecast_date__gte=start_date,
+                forecast_date__lte=end_date,
+                **filters
+            )
+        except ObjectDoesNotExist:
+            return JsonResponse({'data': []})
 
         serializer = self.serializer_class(forecasts, many=True)
         return JsonResponse({'data': serializer.data})
-        # start_date = datetime.now().date() + timedelta(days=1)
-        # end_date = start_date + timedelta(days=selected_interval)
-        #
-        # filters = {}
-        # if st_city_id:
-        #     filters['store__st_city_id'] = st_city_id
-        # if store_id:
-        #     filters['store__st_id'] = store_id
-        # if pr_group_id:
-        #     filters['product__pr_group_id'] = pr_group_id
-        # if pr_cat_id:
-        #     filters['product__pr_cat_id'] = pr_cat_id
-        # if pr_subcat_id:
-        #     filters['product__pr_subcat_id'] = pr_subcat_id
-        # try:
-        #     forecasts = SalesForecast.objects.filter(
-        #         forecast_date__gte=start_date,
-        #         forecast_date__lte=end_date,
-        #         **filters
-        #     )
-        # except ObjectDoesNotExist:
-        #     return JsonResponse({'data': []})
-        #
-        # serializer = self.serializer_class(forecasts, many=True)
-        # return JsonResponse({'data': serializer.data})
 
 
 class ExportSelectedForecastsToExcelView(APIView):
