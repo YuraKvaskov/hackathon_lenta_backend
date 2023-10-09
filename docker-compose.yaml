@@ -1,17 +1,37 @@
-# версия docker-compose
 version: '3.8'
 
-# имена и описания контейнеров, которые должны быть развёрнуты
-services:  
-  
-  
-  web:
-    build: lenta/
+services:
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+        - postgres_data:/var/lib/postgresql/data/
+    ports:
+        - "5432:5432"
+    env_file:
+        - ./.env
+    restart: always
+
+  api:
+    image: yuraskv/lenta:latest
     restart: always
     ports:
      - "8000:8000"
-    # "зависит от", 
-    # depends_on:
-    #   - db
-    # env_file:
-      # - ./.env 
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+      -
+#  frontend:
+#    image: yuraskv/frontend:latest
+#    volumes:
+#      - ../frontend/:/app/result_build/
+#
+#  ml:
+#    image:
+#    restart: always
+#
+#volumes:
+#  static_value:
+#  media_value:
+#  postgres_data:
+#  redoc:

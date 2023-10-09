@@ -11,7 +11,7 @@ from api.v1.views import (
 )
 
 urlpatterns = [
-	path('user/', include('djoser.urls')),
+	# path('user/', include('djoser.urls')),
 	path('shops/', ShopsView.as_view(), name='shops-list'),
 	path('categories/', CategoriesView.as_view(), name='categories-list'),
 	path('sales/', SalesView.as_view(), name='sales-list'),
