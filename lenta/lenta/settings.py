@@ -103,8 +103,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'API для ML сервиса команды "За еду!"',
-    'DESCRIPTION': 'Добавим сюда крутое описание, позже..',
+    'TITLE': 'API команды "За еду!"',
+    'DESCRIPTION': ('Наш проект - это как смесь высококалорийных пончиков и '
+                    'эспрессо, приправленная долей ночных бодрствований! '
+                    'Мы выпили более 100 эспрессо и урезали сон на 20%. '
+                    'Но, несмотря на это, наша команда полна энергии'),
     'VERSION': '1.0.0',
     "SERVE_INCLUDE_SCHEMA": False,
 }
