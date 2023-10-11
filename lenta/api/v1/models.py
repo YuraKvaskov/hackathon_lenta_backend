@@ -42,9 +42,53 @@ class FilterTemplate(models.Model):
         return self.name
 
 
+
+class City(models.Model):
+    st_city_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+    # Другие поля, связанные с городом
+
+    def __str__(self):
+        return self.st_city_id
+
+
+class ProductGroup(models.Model):
+    pr_group_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+    # Другие поля, связанные с группой продуктов
+
+    def __str__(self):
+        return self.pr_group_id
+
+
+class ProductCategory(models.Model):
+    pr_cat_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+    pr_group_id = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
+    # Другие поля, связанные с категорией продуктов
+
+    def __str__(self):
+        return self.pr_cat_id
+
+
+class ProductSubcategory(models.Model):
+    pr_subcat_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+    pr_cat_id = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    # Другие поля, связанные с подкатегорией продуктов
+
+    def __str__(self):
+        return self.pr_subcat_id
+
+
+class Product(models.Model):
+    pr_sku_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+    subcategory = models.ForeignKey(ProductSubcategory, on_delete=models.CASCADE, db_index=True)
+    pr_uom_id = models.IntegerField(db_index=True)
+
+    def __str__(self):
+        return self.pr_sku_id
+
+
 class Store(models.Model):
     st_id = models.CharField(max_length=255, primary_key=True, db_index=True)
-    st_city_id = models.CharField(max_length=255, db_index=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, db_index=True)  # Используйте новую модель City
     st_division_code = models.CharField(max_length=255, db_index=True)
     st_type_format_id = models.IntegerField()
     st_type_loc_id = models.IntegerField()
@@ -53,17 +97,6 @@ class Store(models.Model):
 
     def __str__(self):
         return self.st_id
-
-
-class Product(models.Model):
-    pr_sku_id = models.CharField(max_length=255, primary_key=True, db_index=True)
-    pr_group_id = models.CharField(max_length=255, db_index=True)
-    pr_cat_id = models.CharField(max_length=255, db_index=True)
-    pr_subcat_id = models.CharField(max_length=255, db_index=True)
-    pr_uom_id = models.IntegerField(db_index=True)
-
-    def __str__(self):
-        return self.pr_sku_id
 
 
 class Sales(models.Model):
@@ -76,9 +109,56 @@ class Sales(models.Model):
     pr_sales_in_rub = models.FloatField()
     pr_promo_sales_in_rub = models.FloatField()
 
+    def __str__(self):
+        return f"Sales record for {self.product} at {self.store} on {self.date}"
+
 
 class SalesForecast(models.Model):
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, db_index=True)  # Используйте обновленную модель Store
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     forecast_date = models.DateField()
     sales_units = models.JSONField()
+
+    def __str__(self):
+        return f"SalesForecast for {self.product} at {self.store} on {self.forecast_date}"
+
+# class Store(models.Model):
+#     st_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+#     st_city_id = models.CharField(max_length=255, db_index=True)
+#     st_division_code = models.CharField(max_length=255, db_index=True)
+#     st_type_format_id = models.IntegerField()
+#     st_type_loc_id = models.IntegerField()
+#     st_type_size_id = models.IntegerField()
+#     st_is_active = models.BooleanField(db_index=True)
+#
+#     def __str__(self):
+#         return self.st_id
+#
+#
+# class Product(models.Model):
+#     pr_sku_id = models.CharField(max_length=255, primary_key=True, db_index=True)
+#     pr_group_id = models.CharField(max_length=255, db_index=True)
+#     pr_cat_id = models.CharField(max_length=255, db_index=True)
+#     pr_subcat_id = models.CharField(max_length=255, db_index=True)
+#     pr_uom_id = models.IntegerField(db_index=True)
+#
+#     def __str__(self):
+#         return self.pr_sku_id
+#
+#
+# class Sales(models.Model):
+#     store = models.ForeignKey(Store, on_delete=models.CASCADE, db_index=True)
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+#     date = models.DateField(db_index=True)
+#     pr_sales_type_id = models.IntegerField()
+#     pr_sales_in_units = models.IntegerField()
+#     pr_promo_sales_in_units = models.IntegerField()
+#     pr_sales_in_rub = models.FloatField()
+#     pr_promo_sales_in_rub = models.FloatField()
+#
+#
+# class SalesForecast(models.Model):
+#     store = models.ForeignKey(Store, on_delete=models.CASCADE)
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+#     forecast_date = models.DateField()
+#     sales_units = models.JSONField()
