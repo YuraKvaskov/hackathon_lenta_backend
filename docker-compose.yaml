@@ -1,37 +1,26 @@
-version: '3.8'
+version: '3'
 
 services:
-  db:
-    image: postgres:13.0-alpine
-    volumes:
-        - postgres_data:/var/lib/postgresql/data/
-    ports:
-        - "5432:5432"
-    env_file:
-        - ./.env
-    restart: always
-
   api:
-    image: yuraskv/lenta:latest
+    build:
+      context: ./lenta
     restart: always
     ports:
-     - "8000:8000"
+      - "8000:8000"
     depends_on:
       - db
     env_file:
-      - ./.env
-      -
-#  frontend:
-#    image: yuraskv/frontend:latest
-#    volumes:
-#      - ../frontend/:/app/result_build/
-#
-#  ml:
-#    image:
-#    restart: always
-#
-#volumes:
-#  static_value:
-#  media_value:
-#  postgres_data:
-#  redoc:
+      - .env
+    command: >
+      sh -c "python3 manage.py makemigrations &&
+            python3 manage.py migrate &&
+            echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')\" | python3 manage.py shell &&
+            python manage.py my_commands &&
+            python3 manage.py runserver 0:8000"
+
+  db:
+    image: postgres:latest
+    environment:
+        POSTGRES_DB: ${DB_NAME}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
