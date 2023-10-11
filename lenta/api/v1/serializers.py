@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate, ProductSubcategory, ProductCategory, \
-    ProductGroup
+    ProductGroup, City
 from django.contrib.auth import get_user_model
 from datetime import datetime
 
@@ -33,16 +33,16 @@ class InfoHeaderSerializer(serializers.ModelSerializer):
         return store_ids
 
 
-class CitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = City
-        fields = '__all__'
-
 class StoreSerializer(serializers.ModelSerializer):
-    st_is_active = serializers.IntegerField()  # Поле st_is_active изначально BooleanField
-
     class Meta:
         model = Store
+        fields = '__all__'
+
+class CitySerializer(serializers.ModelSerializer):
+    stores = StoreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = City
         fields = '__all__'
 
 class ProductGroupSerializer(serializers.ModelSerializer):
