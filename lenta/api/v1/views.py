@@ -1,5 +1,6 @@
 from io import BytesIO
 import pandas as pd
+from django.db.models import Q
 
 from rest_framework.views import APIView
 from rest_framework import filters, status
@@ -13,10 +14,12 @@ from rest_framework import permissions
 from rest_framework.decorators import action, permission_classes
 
 
-from api.v1.filters import ShopsFilter
-from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate
+# from api.v1.filters import ShopsFilter
+from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate, ProductSubcategory, ProductCategory, \
+    ProductGroup
 from api.v1.serializers import SalesSerializer, StoreSerializer, SalesForecastSerializer, \
-    InfoHeaderSerializer, FilterTemplateSerializer, ProductSerializer
+    InfoHeaderSerializer, FilterTemplateSerializer, ProductSerializer, ProductCategorySerializer, \
+    ProductGroupSerializer, ProductSubcategorySerializer
 
 
 # class SaveFilterTemplateView(APIView):
@@ -92,25 +95,63 @@ class SalesView(APIView):
         store_id = request.query_params.get('store_id')
         if product_id and store_id:
             sales = Sales.objects.filter(product__pr_sku_id=product_id, store__st_id=store_id)
-        serialized_sales = self.serializer_class(sales, many=True).data
-        response_data = {
-            "data": [
-                {
-                    "store_id": store_id,
-                    "product_id": product_id,
-                    "fact": serialized_sales
-                }
-            ]
-        }
-        return Response(response_data)
+
+            serialized_sales = self.serializer_class(sales, many=True).data
+
+            response_data = {
+                "data": [
+                    {
+                        "store": store_id,
+                        "sku": product_id,
+                        "fact": serialized_sales
+                    }
+                ]
+            }
+
+            return Response(response_data)
+        else:
+            return Response({"message": "Отсутствуют параметры product_id и store_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class CategoriesView(APIView):
+#     def get(self, request):
+#         product_groups = ProductGroup.objects.all()
+#         data = []
+#
+#         for group in product_groups:
+#             group_data = ProductGroupSerializer(group).data
+#             group_data['categories'] = []
+#
+#             # Используйте правильное поле для фильтрации
+#             categories = ProductCategory.objects.filter(pr_group_id=group)
+#
+#             for category in categories:
+#                 category_data = ProductCategorySerializer(category).data
+#                 category_data['subcategories'] = []
+#                 subcategories = ProductSubcategory.objects.filter(pr_cat_id=category)
+#
+#                 for subcategory in subcategories:
+#                     subcategory_data = ProductSubcategorySerializer(subcategory).data
+#                     subcategory_data['products'] = []
+#                     products = Product.objects.filter(pr_subcategory=subcategory)
+#
+#                     for product in products:
+#                         product_data = ProductSerializer(product).data
+#                         subcategory_data['products'].append(product_data)
+#
+#                     category_data['subcategories'].append(subcategory_data)
+#
+#                 group_data['categories'].append(category_data)
+#
+#             data.append(group_data)
+#
+#         return Response(data)
 
 class CategoriesView(APIView):
-    serializer_class = ProductSerializer
-
     def get(self, request):
-        products = Product.objects.all()
-        serializer = self.serializer_class(products, many=True)
-        return Response({"data": serializer.data})
+        product_groups = ProductGroup.objects.all()
+        data = ProductGroupSerializer(product_groups, many=True).data
+        return Response(data)
 
 class ShopsView(APIView):
     serializer_class = StoreSerializer
@@ -120,21 +161,9 @@ class ShopsView(APIView):
         serializer = self.serializer_class(queryset, many=True)
         return Response({"data": serializer.data})
 
+
 class SalesForecastView(APIView):
     serializer_class = SalesForecastSerializer
-
-    def post(self, request):
-        data = request.data.get("data")
-        if data:
-            for forecast_data in data:
-                serializer = self.serializer_class(data=forecast_data)
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"message": "Прогноз успешно сохранен"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"message": "В запросе отсутствуют данные"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         st_city_id = request.query_params.get('st_city_id')
@@ -142,36 +171,98 @@ class SalesForecastView(APIView):
         pr_group_id = request.query_params.get('pr_group_id')
         pr_cat_id = request.query_params.get('pr_cat_id')
         pr_subcat_id = request.query_params.get('pr_subcat_id')
-        pr_sku_id = request.query_params.get('pr_sku_id')  # Добавляем параметр для фильтрации по pr_sku_id
+        pr_sku_id = request.query_params.get('pr_sku_id')
         selected_interval = int(request.query_params.get('selected_interval', 14))
+
         start_date = datetime.now().date() + timedelta(days=1)
         end_date = start_date + timedelta(days=selected_interval)
 
-        filters = {}
+        filters = Q()
         if st_city_id:
-            filters['store__st_city_id'] = st_city_id
+            filters &= Q(store__st_city_id=st_city_id)
         if store_id:
-            filters['store__st_id'] = store_id
+            filters &= Q(store__st_id=store_id)
         if pr_group_id:
-            filters['product__pr_group_id'] = pr_group_id
+            filters &= Q(product__pr_group_id=pr_group_id)
         if pr_cat_id:
-            filters['product__pr_cat_id'] = pr_cat_id
+            filters &= Q(product__pr_cat_id=pr_cat_id)
         if pr_subcat_id:
-            filters['product__pr_subcat_id'] = pr_subcat_id
+            filters &= Q(product__pr_subcat_id=pr_subcat_id)
         if pr_sku_id:
-            filters['product__pr_sku_id'] = pr_sku_id
+            filters &= Q(product__pr_sku_id=pr_sku_id)
 
-        try:
-            forecasts = SalesForecast.objects.filter(
-                forecast_date__gte=start_date,
-                forecast_date__lte=end_date,
-                **filters
-            )
-        except ObjectDoesNotExist:
-            return JsonResponse({'data': []})
+        forecasts = SalesForecast.objects.filter(filters)
 
-        serializer = self.serializer_class(forecasts, many=True)
-        return JsonResponse({'data': serializer.data})
+        # Используйте сериализаторы для преобразования объектов в списки ID
+        product_ids = ProductSerializer(forecasts, many=True).data
+        category_ids = ProductCategorySerializer(forecasts, many=True).data
+        group_ids = ProductGroupSerializer(forecasts, many=True).data
+        subcategory_ids = ProductSubcategorySerializer(forecasts, many=True).data
+
+        # Возвращайте списки ID вместе с другими данными
+        return Response({'data': {'products': product_ids, 'categories': category_ids, 'groups': group_ids,
+                                  'subcategories': subcategory_ids}})
+
+        # forecasts = SalesForecast.objects.filter(
+        #     forecast_date__gte=start_date,
+        #     forecast_date__lte=end_date
+        # ).filter(filters)
+        #
+        # serializer = self.serializer_class(forecasts, many=True)
+        # return Response({'data': serializer.data})
+
+# class SalesForecastView(APIView):
+#     serializer_class = SalesForecastSerializer
+#
+#     def post(self, request):
+#         data = request.data.get("data")
+#         if data:
+#             for forecast_data in data:
+#                 serializer = self.serializer_class(data=forecast_data)
+#                 if serializer.is_valid():
+#                     serializer.save()
+#                 else:
+#                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             return Response({"message": "Прогноз успешно сохранен"}, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response({"message": "В запросе отсутствуют данные"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def get(self, request):
+#         st_city_id = request.query_params.get('st_city_id')
+#         store_id = request.query_params.get('store_id')
+#         pr_group_id = request.query_params.get('pr_group_id')
+#         pr_cat_id = request.query_params.get('pr_cat_id')
+#         pr_subcat_id = request.query_params.get('pr_subcat_id')
+#         pr_sku_id = request.query_params.get('pr_sku_id')  # Добавляем параметр для фильтрации по pr_sku_id
+#         selected_interval = int(request.query_params.get('selected_interval', 14))
+#         start_date = datetime.now().date() + timedelta(days=1)
+#         end_date = start_date + timedelta(days=selected_interval)
+#
+#         filters = {}
+#         if st_city_id:
+#             filters['store__st_city_id'] = st_city_id
+#         if store_id:
+#             filters['store__st_id'] = store_id
+#         if pr_group_id:
+#             filters['product__pr_group_id'] = pr_group_id
+#         if pr_cat_id:
+#             filters['product__pr_cat_id'] = pr_cat_id
+#         if pr_subcat_id:
+#             filters['product__pr_subcat_id'] = pr_subcat_id
+#         if pr_sku_id:
+#             filters['product__pr_sku_id'] = pr_sku_id
+#
+#         try:
+#             forecasts = SalesForecast.objects.filter(
+#                 forecast_date__gte=start_date,
+#                 forecast_date__lte=end_date,
+#                 **filters
+#             )
+#         except ObjectDoesNotExist:
+#             return JsonResponse({'data': []})
+#
+#         serializer = self.serializer_class(forecasts, many=True)
+#         return JsonResponse({'data': serializer.data})
 
 class ExportSelectedForecastsToExcelView(APIView):
     def post(self, request):

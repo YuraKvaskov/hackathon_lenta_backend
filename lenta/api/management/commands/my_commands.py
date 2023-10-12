@@ -1,9 +1,10 @@
 import csv
 import os
 from random import randint, uniform, choice
+import json
 
 from django.core.management.base import BaseCommand
-from api.v1.models import Store, Product, Sales, SalesForecast
+from api.v1.models import Store, Product, Sales, SalesForecast, ProductSubcategory, ProductCategory, ProductGroup, City
 import random
 from datetime import date, datetime
 from django.utils import timezone
@@ -62,7 +63,9 @@ class Command(BaseCommand):
             subcategory = ProductSubcategory.objects.get(pr_subcat_id=f"subcat_{randint(1, 3)}")
             product = Product(
                 pr_sku_id=f"sku_{sku_id}",
-                subcategory=subcategory,
+                pr_group=subcategory.pr_cat_id.pr_group_id,
+                pr_category=subcategory.pr_cat_id,
+                pr_subcategory=subcategory,
                 pr_uom_id=randint(1, 5)
             )
             product.save()
@@ -84,6 +87,35 @@ class Command(BaseCommand):
                 pr_promo_sales_in_rub=uniform(0, 200)
             )
             sales.save()
+
+        # Теперь добавляем данные для модели SalesForecast
+        for _ in range(100):
+            store = Store.objects.get(st_id=f"store_{randint(0, 99)}")
+            product = Product.objects.get(pr_sku_id=f"sku_{randint(0, 99)}")
+
+            forecast_date = date(randint(2022, 2024), randint(1, 12), randint(1, 28))
+            forecast = [
+                {
+                    "date": str(forecast_date),
+                    "sales_type": randint(1, 4),
+                    "sales_units": randint(10, 100),
+                    "sales_units_promo": randint(0, 50),
+                    "sales_rub": uniform(100, 1000),
+                    "sales_run_promo": uniform(0, 200)
+                }
+            ]
+
+            forecast_json = json.dumps(forecast)
+
+            sales_forecast = SalesForecast(
+                store=store,
+                product=product,
+                forecast_date=forecast_date,
+                forecast=forecast_json
+            )
+            sales_forecast.save()
+
+
 
 # class Command(BaseCommand):
 #     help = 'Populate the database with sample data'
