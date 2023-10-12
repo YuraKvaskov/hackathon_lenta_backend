@@ -38,10 +38,12 @@ class CitySerializer(serializers.ModelSerializer):
         model = City
         fields = '__all__'
 
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['pr_sku_id']
+
 
 class ProductSubcategorySerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True)
@@ -50,12 +52,14 @@ class ProductSubcategorySerializer(serializers.ModelSerializer):
         model = ProductSubcategory
         fields = ['pr_subcat_id', 'products']
 
+
 class ProductCategorySerializer(serializers.ModelSerializer):
     subcategories = ProductSubcategorySerializer(many=True)
 
     class Meta:
         model = ProductCategory
         fields = ['pr_cat_id', 'subcategories']
+
 
 class ProductGroupSerializer(serializers.ModelSerializer):
     categories = ProductCategorySerializer(many=True)
@@ -64,6 +68,7 @@ class ProductGroupSerializer(serializers.ModelSerializer):
         model = ProductGroup
         fields = ['pr_group_id', 'categories']
 
+
 class StoreSerializer(serializers.ModelSerializer):
     st_city_id = CitySerializer()
 
@@ -71,20 +76,12 @@ class StoreSerializer(serializers.ModelSerializer):
         model = Store
         fields = '__all__'
 
+
 class SalesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sales
         fields = '__all__'
 
-# class SalesForecastSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = SalesForecast
-#         fields = '__all__'
-#
-#     def to_representation(self, instance):
-#         # Преобразуйте даты из формата datetime в строку "год-месяц-день"
-#         instance.forecast_date = instance.forecast_date.strftime("%Y-%m-%d")
-#         return super().to_representation(instance)
 
 class SalesForecastSerializer(serializers.ModelSerializer):
     forecast  = serializers.JSONField()
@@ -95,11 +92,21 @@ class SalesForecastSerializer(serializers.ModelSerializer):
      # Здесь предполагается, что поле "forecast" будет JSON-строкой
     # selected = serializers.BooleanField(default=False)
 
-
     def to_representation(self, instance):
         # Преобразуйте даты из формата datetime в строку "год-месяц-день"
         instance.forecast_date = instance.forecast_date.strftime("%Y-%m-%d")
         return super().to_representation(instance)
+
+
+
+
+
+
+
+
+
+
+
 
 #
 # class StoreSerializer(serializers.ModelSerializer):
