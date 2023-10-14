@@ -14,4 +14,14 @@ WORKDIR /app
 
 EXPOSE 8000
 
+RUN python3 manage.py makemigrations
+
+RUN python3 manage.py migrate
+
+RUN echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')" | python3 manage.py shell
+
+RUN python manage.py my_commands
+
+# Запускаем сервер
 CMD ["python3", "manage.py", "runserver", "0:8000"]
+#CMD ["sh", "-c", "python3 manage.py makemigrations && python3 manage.py migrate && echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')\" | python3 manage.py shell && python manage.py my_commands && python3 manage.py runserver 0:8000"]

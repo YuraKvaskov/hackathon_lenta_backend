@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  frontend:
+    image: yuraskv/frontend:latest
+    ports:
+      - "5173:5173"  # Проксируйте порт 5173 из контейнера на порт 8080 на хост-системе
+    volumes:
+      - ../frontend/:/app/result_build/
   api:
     build:
       context: ./lenta
@@ -11,12 +17,12 @@ services:
       - db
     env_file:
       - .env
-    command: >
-      sh -c "python3 manage.py makemigrations &&
-            python3 manage.py migrate &&
-            echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')\" | python3 manage.py shell &&
-            python manage.py my_commands &&
-            python3 manage.py runserver 0:8000"
+#    command: >
+#      sh -c "python3 manage.py makemigrations &&
+#            python3 manage.py migrate &&
+#            echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_user('user', 'user@example.com', 'password')\" | python3 manage.py shell &&
+#            python manage.py my_commands &&
+#            python3 manage.py runserver 0:8000"
 
   db:
     image: postgres:latest
@@ -24,3 +30,8 @@ services:
         POSTGRES_DB: ${DB_NAME}
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
