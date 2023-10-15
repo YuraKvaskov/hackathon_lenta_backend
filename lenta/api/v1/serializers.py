@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate
+from api.v1.models import Store, Product, Sales, SalesForecast, FilterTemplate, ProductSubcategory, ProductCategory, \
+    ProductGroup, City
 from django.contrib.auth import get_user_model
 from datetime import datetime
 
@@ -32,17 +33,64 @@ class InfoHeaderSerializer(serializers.ModelSerializer):
         return store_ids
 
 
-class SalesForecastSerializer(serializers.ModelSerializer):
+class CitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = SalesForecast
+        model = City
         fields = '__all__'
 
-    # forecast = serializers.JSONField()  # Здесь предполагается, что поле "forecast" будет JSON-строкой
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['pr_sku_id']
+
+
+class ProductSubcategorySerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True)
+
+    class Meta:
+        model = ProductSubcategory
+        fields = ['pr_subcat_id', 'products']
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    subcategories = ProductSubcategorySerializer(many=True)
+
+    class Meta:
+        model = ProductCategory
+        fields = ['pr_cat_id', 'subcategories']
+
+
+class ProductGroupSerializer(serializers.ModelSerializer):
+    categories = ProductCategorySerializer(many=True)
+
+    class Meta:
+        model = ProductGroup
+        fields = ['pr_group_id', 'categories']
+
+
+class StoreSerializer(serializers.ModelSerializer):
+    st_city_id = CitySerializer()
+
+    class Meta:
+        model = Store
+        fields = '__all__'
+
+
+class SalesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sales
+        fields = '__all__'
+
+
+class SalesForecastSerializer(serializers.ModelSerializer):
+    forecast  = serializers.JSONField()
+    class Meta:
+        model = SalesForecast
+        fields = ('store', 'product', 'forecast_date', 'forecast')
+
+     # Здесь предполагается, что поле "forecast" будет JSON-строкой
     # selected = serializers.BooleanField(default=False)
-    #
-    # class Meta:
-    #     model = SalesForecast
-    #     fields = ('selected', 'store', 'product', 'forecast_date', 'forecast')
 
     def to_representation(self, instance):
         # Преобразуйте даты из формата datetime в строку "год-месяц-день"
@@ -50,32 +98,43 @@ class SalesForecastSerializer(serializers.ModelSerializer):
         return super().to_representation(instance)
 
 
-class StoreSerializer(serializers.ModelSerializer):
-    st_is_active = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Store
-        fields = '__all__'
-        
-    def get_st_is_active(self, obj):
-        return int(obj.st_is_active)
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = '__all__'
 
 
-class SalesSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Sales
-        fields = [
-            'date',
-            'pr_sales_type_id',
-            'pr_sales_in_units',
-            'pr_promo_sales_in_units',
-            'pr_sales_in_rub',
-            'pr_promo_sales_in_rub'
-        ]
+
+
+
+
+
+#
+# class StoreSerializer(serializers.ModelSerializer):
+#     st_is_active = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = Store
+#         fields = '__all__'
+#
+#     def get_st_is_active(self, obj):
+#         return int(obj.st_is_active)
+#
+#
+# class CategoriesSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Product
+#         fields = '__all__'
+#
+#
+# class SalesSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = Sales
+#         fields = [
+#             'date',
+#             'pr_sales_type_id',
+#             'pr_sales_in_units',
+#             'pr_promo_sales_in_units',
+#             'pr_sales_in_rub',
+#             'pr_promo_sales_in_rub'
+#         ]
