@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from api.v1.views import (
-	SaveFilterTemplateView,
+	# SaveFilterTemplateView,
 	ExportSelectedForecastsToExcelView,
 	SalesForecastView,
 	SalesView,
@@ -19,6 +19,6 @@ urlpatterns = [
 		 ExportSelectedForecastsToExcelView.as_view(),
 		 name='export_selected_forecasts'),
 	path('forecast/', SalesForecastView.as_view(), name='forecast-list'),
-	path('save-filter-template/', SaveFilterTemplateView.as_view(), name='save_filter_template'),
+	# path('save-filter-template/', SaveFilterTemplateView.as_view(), name='save_filter_template'),
 	path('info-header/', InfoHeaderView.as_view(), name='info_header'),
 ]
